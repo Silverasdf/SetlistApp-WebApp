@@ -2,6 +2,10 @@
 
 A local-first web app for building band setlists from a song catalog. The UI is Next.js + TypeScript; the setlist engine and file processing run in a Python FastAPI service. No account or database is required.
 
+## Development note
+
+This project was developed with AI coding assistance, with the goal of producing a clean, well-tested, production-shaped application that demonstrates backend, frontend, API, testing, and DevOps practices suitable for technical interviews.
+
 ## Features
 
 - Import a CSV song catalog and normalize missing columns to defaults.
