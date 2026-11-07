@@ -1,15 +1,18 @@
 "use client";
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 
 type Song = { Song: string; Artist: string; Key: string; Tuning: string; Time: number; Mood: number; Active: boolean };
 type Generated = { songs: Song[]; text: string; song_count: number; song_time_minutes: number; target_time_minutes: number };
 const API = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 const emptySong = (): Song => ({ Song:"", Artist:"Unknown Artist", Key:"Misc", Tuning:"E Standard", Time:1, Mood:5, Active:true });
+const STORAGE_KEY = "setlistapp:songs";
+function loadSongs():Song[]{try{const raw=localStorage.getItem(STORAGE_KEY);if(typeof window==="undefined"||!raw)return[];const parsed=JSON.parse(raw);if(!Array.isArray(parsed))return[];return parsed.filter((s)=>s&&typeof s==="object"&&typeof s.Song==="string"&&typeof s.Artist==="string") as Song[]}catch{return []}}
 
 export default function Home() {
- const [songs,setSongs] = useState<Song[]>([]); const [spotifyUrl,setSpotifyUrl] = useState(""); const [spotifyToken,setSpotifyToken] = useState("");
+ const [songs,setSongs] = useState<Song[]>(loadSongs); const [spotifyUrl,setSpotifyUrl] = useState(""); const [spotifyToken,setSpotifyToken] = useState("");
  const [ogWeight,setOgWeight] = useState("1.2"); const [moodWeight,setMoodWeight] = useState("0.8"); const [setTime,setSetTime] = useState("60"); const [transitionTime,setTransitionTime] = useState(""); const [clusterSize,setClusterSize] = useState("2");
  const [includes,setIncludes] = useState<string[]>([]); const [generated,setGenerated] = useState<Generated|null>(null); const [busy,setBusy] = useState(false); const [status,setStatus] = useState(""); const [isError,setIsError] = useState(false); const [seed,setSeed] = useState("");
+ useEffect(()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(songs))}catch{}},[songs]);
  const activeCount = useMemo(()=>songs.filter(s=>s.Active).length,[songs]); const catalogTime = useMemo(()=>songs.reduce((sum,s)=>sum+s.Time,0),[songs]);
  async function request(path:string, init:RequestInit={}) { const res=await fetch(`${API}${path}`,init); if(!res.ok){let msg=`Request failed (${res.status})`; try{const body=await res.json();const detail=body?.detail;msg=Array.isArray(detail)?`Request failed (${res.status}): ${detail.map((d)=>d?.msg||d?.type).join(", ")}`:detail||msg}catch{} throw new Error(msg)} return res; }
  function updateSong(index:number, field:keyof Song, value:string|boolean){setSongs(old=>old.map((s,i)=>i===index?{...s,[field]:field==="Active"?value:field==="Time"||field==="Mood"?Number(value):value}:s));setGenerated(null)}
