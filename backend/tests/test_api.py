@@ -62,6 +62,22 @@ def test_export_txt_requires_songs():
     assert "no songs" in response.json()["detail"]
 
 
+def test_export_json_requires_songs():
+    response = client.post("/api/export/json", json={"songs": []})
+    assert response.status_code == 400
+    assert "no songs" in response.json()["detail"]
+
+
+def test_export_json_returns_song_records():
+    response = client.post("/api/export/json", json={"songs": [{"Song": "New Song", "Artist": "OG", "Key": "A", "Tuning": "E Standard", "Time": 3, "Mood": 9, "Active": True}]})
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/json")
+    assert 'attachment; filename="setlist.json"' in response.headers["content-disposition"]
+    body = response.json()
+    assert body[0]["Song"] == "New Song"
+    assert body[0]["Time"] == 3.0
+
+
 def test_spotify_import_without_token_is_limited():
     response = client.post("/api/import/spotify", json={"url": "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M"})
     assert response.status_code == 501

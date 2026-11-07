@@ -94,6 +94,13 @@ def export_txt(req: ExportRequest):
     data = write_setlist_to_string(frame).encode("utf-8")
     return StreamingResponse(BytesIO(data), media_type="text/plain; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="setlist.txt"'})
 
+@app.post("/api/export/json")
+def export_json(req: ExportRequest):
+    if not req.songs: raise HTTPException(400, "There are no songs to export.")
+    frame = normalize_songs(pd.DataFrame([s.model_dump() for s in req.songs]))
+    data = frame.to_json(orient="records", date_format="iso").encode("utf-8")
+    return StreamingResponse(BytesIO(data), media_type="application/json; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="setlist.json"'})
+
 @app.get("/api/export/template")
 def export_template():
     data = write_template_to_string().encode("utf-8-sig")

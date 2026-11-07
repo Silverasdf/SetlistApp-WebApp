@@ -12,7 +12,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Edit song metadata and active status in the browser.
 - Configure set time, transition time, original-song weight, mood weight, and cluster size.
 - Mark songs to include in the generated setlist.
-- Export the catalog or generated setlist as CSV; export the setlist as TXT.
+- Export the catalog or generated setlist as CSV; export the setlist as TXT; export the catalog as JSON.
 - Download a starter CSV template for a new catalog.
 - Run locally with Docker Compose.
 
@@ -122,6 +122,7 @@ References:
 - `POST /api/generate` — generate a setlist from song records and settings
 - `POST /api/export/txt` — download song records as a setlist text file
 - `POST /api/export/csv` — download song records as CSV
+- `POST /api/export/json` — download song records as JSON
 
 ## Development and CI
 
