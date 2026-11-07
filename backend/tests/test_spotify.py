@@ -1,6 +1,6 @@
 import httpx
 import pytest
-from app.spotify import fetch_playlist_songs, parse_playlist_id
+from app.spotify import fetch_playlist_info, fetch_playlist_songs, parse_playlist_id
 
 
 def test_parse_playlist_id_extracts_id():
@@ -56,6 +56,42 @@ def test_fetch_playlist_songs_maps_404_to_error():
 
     with pytest.raises(ValueError, match="was not found or is not accessible"):
         fetch_playlist_songs(
+            "https://open.spotify.com/playlist/missing",
+            "token",
+            client=httpx.Client(transport=httpx.MockTransport(handler)),
+        )
+
+
+def test_fetch_playlist_info_maps_playlist_metadata():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"name": "Band Favorites", "track_count": 12})
+
+    info = fetch_playlist_info(
+        "https://open.spotify.com/playlist/abc123",
+        "token",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert info == {"name": "Band Favorites", "track_count": 12}
+
+
+def test_fetch_playlist_info_defaults_when_metadata_missing():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={})
+
+    info = fetch_playlist_info(
+        "https://open.spotify.com/playlist/abc123",
+        "token",
+        client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+    assert info == {"name": "Unknown Playlist", "track_count": 0}
+
+
+def test_fetch_playlist_info_maps_404_to_error():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(404, json={"error": {"status": 404, "message": "Resource not found"}})
+
+    with pytest.raises(ValueError, match="was not found or is not accessible"):
+        fetch_playlist_info(
             "https://open.spotify.com/playlist/missing",
             "token",
             client=httpx.Client(transport=httpx.MockTransport(handler)),

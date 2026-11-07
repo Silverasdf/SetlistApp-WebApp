@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from .engine import normalize_songs, make_setlist, sort_sample_into_clusters, write_setlist_to_string, write_template_to_string
-from .spotify import fetch_playlist_songs
+from .spotify import fetch_playlist_info, fetch_playlist_songs
 
 app = FastAPI(title="SetlistApp API", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|10\.\d+\.\d+\.\d+|172\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+)(:\d+)?$", allow_credentials=False, allow_methods=["GET", "POST", "OPTIONS"], allow_headers=["*"])
@@ -61,10 +61,11 @@ def import_spotify(payload: dict):
     if not token:
         raise HTTPException(501, "Login-free import of arbitrary public Spotify playlists is not supported by Spotify's current official API. Upload a CSV instead. The import adapter is isolated so a compliant provider can be added later.")
     try:
+        playlist_info = fetch_playlist_info(url, token)
         songs = fetch_playlist_songs(url, token)
     except Exception as exc:
         raise HTTPException(400, f"Could not import Spotify playlist: {exc}") from exc
-    return {"songs": songs, "count": len(songs)}
+    return {"songs": songs, "count": len(songs), "playlist_name": playlist_info["name"], "track_count": playlist_info["track_count"]}
 
 @app.post("/api/generate")
 def generate(req: GenerateRequest):

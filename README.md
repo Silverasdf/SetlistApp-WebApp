@@ -108,7 +108,7 @@ Until a domain is chosen, use <http://localhost:3000> with the API at <http://lo
 
 The input accepts Spotify playlist URLs and an optional OAuth access token for the official import flow. Spotify's official Get Playlist Items endpoint requires OAuth and currently limits access to playlists owned by the authenticated user or playlists they collaborate on. Public visibility alone does not grant anonymous API access, so token-less imports are rejected with a clear message. This project does not scrape Spotify pages or bypass access controls.
 
-With a valid access token, `POST /api/import/spotify` calls the Spotify provider and converts playlist tracks into song records (using defaults for key, tuning, and mood; duration comes from the track's `duration_ms`). For now, exporting or preparing the playlist as a CSV and importing that file is the way to get started without OAuth. The import route is isolated so a compliant provider can be added later.
+With a valid access token, `POST /api/import/spotify` calls the Spotify provider and converts playlist tracks into song records (using defaults for key, tuning, and mood; duration comes from the track's `duration_ms`). The response includes the playlist's `name` and `track_count` alongside the converted `songs`. For now, exporting or preparing the playlist as a CSV and importing that file is the way to get started without OAuth. The import route is isolated so a compliant provider can be added later.
 
 References:
 - [Spotify Get Playlist Items API](https://developer.spotify.com/documentation/web-api/reference/get-playlists-items)
@@ -119,7 +119,7 @@ References:
 - `GET /api/health` — health check
 - `GET /api/export/template` — download a CSV template with the default song columns
 - `POST /api/import/csv` — multipart CSV import
-- `POST /api/import/spotify` — reports current no-login API limitation
+- `POST /api/import/spotify` — reports current no-login API limitation; with a token, returns playlist metadata (`playlist_name`, `track_count`) and converted songs
 - `POST /api/generate` — generate a setlist from song records and settings
 - `POST /api/export/txt` — download song records as a setlist text file
 - `POST /api/export/csv` — download song records as CSV

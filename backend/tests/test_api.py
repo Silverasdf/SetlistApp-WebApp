@@ -91,12 +91,20 @@ def test_spotify_import_rejects_invalid_url():
 
 
 def test_spotify_import_with_token_uses_provider(monkeypatch):
-    def fake_fetch(url, token):
+    def fake_fetch_songs(url, token):
         assert token == "test-token"
         return [{"Song": "Imported Song", "Artist": "OG", "Key": "Misc", "Tuning": "E Standard", "Time": 3.0, "Mood": 5.0, "Active": True}]
 
-    monkeypatch.setattr("app.main.fetch_playlist_songs", fake_fetch)
+    def fake_fetch_info(url, token):
+        assert token == "test-token"
+        return {"name": "Band Favorites", "track_count": 1}
+
+    monkeypatch.setattr("app.main.fetch_playlist_songs", fake_fetch_songs)
+    monkeypatch.setattr("app.main.fetch_playlist_info", fake_fetch_info)
     response = client.post("/api/import/spotify", json={"url": "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M", "token": "test-token"})
     assert response.status_code == 200
-    assert response.json()["count"] == 1
-    assert response.json()["songs"][0]["Song"] == "Imported Song"
+    body = response.json()
+    assert body["count"] == 1
+    assert body["songs"][0]["Song"] == "Imported Song"
+    assert body["playlist_name"] == "Band Favorites"
+    assert body["track_count"] == 1
