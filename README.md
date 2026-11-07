@@ -14,6 +14,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Mark songs to include in the generated setlist.
 - Export the catalog or generated setlist as CSV; export the setlist as TXT; export the catalog as JSON.
 - Download a starter CSV template for a new catalog.
+- View catalog stats (song count and total duration).
 - Run locally with Docker Compose.
 
 ### Song CSV schema
