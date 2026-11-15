@@ -13,6 +13,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Configure set time, transition time, original-song weight, mood weight, and cluster size.
 - Mark songs to include in the generated setlist.
 - Export the catalog or generated setlist as CSV; export the setlist as TXT; export the catalog as JSON.
+- Encode a generated setlist as a shareable code and load that setlist back later.
 - Download a starter CSV template for a new catalog.
 - View catalog stats (song count and total duration).
 - Estimate the total set duration (generated music plus transition time) for a setlist.

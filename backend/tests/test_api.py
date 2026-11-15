@@ -119,3 +119,34 @@ def test_spotify_import_with_token_uses_provider(monkeypatch):
     assert body["songs"][0]["Song"] == "Imported Song"
     assert body["playlist_name"] == "Band Favorites"
     assert body["track_count"] == 1
+
+
+def test_share_requires_songs():
+    response = client.post("/api/export/share", json={"name": "Encore", "notes": "", "songs": []})
+    assert response.status_code == 400
+    assert "no songs" in response.json()["detail"]
+
+
+def test_share_round_trip_returns_code_and_setlist():
+    response = client.post("/api/export/share", json={"name": "Encore Set", "notes": "Bring the loud hat", "songs": [{"Song": "A", "Artist": "OG", "Key": "A", "Tuning": "E Standard", "Time": 3, "Mood": 9, "Active": True}], "transition_time": 1})
+    assert response.status_code == 200
+    code = response.json()["code"]
+    assert isinstance(code, str) and len(code) > 0
+    decoded = client.get(f"/api/export/share?code={code}")
+    assert decoded.status_code == 200
+    body = decoded.json()
+    assert body["name"] == "Encore Set"
+    assert body["notes"] == "Bring the loud hat"
+    assert body["songs"][0]["Song"] == "A"
+    assert body["transition_time"] == 1
+    assert "A" in body["text"]
+
+
+def test_share_decode_requires_code():
+    response = client.get("/api/export/share")
+    assert response.status_code == 400
+
+
+def test_share_decode_rejects_invalid_code():
+    response = client.get("/api/export/share?code=not-base64!!")
+    assert response.status_code == 400

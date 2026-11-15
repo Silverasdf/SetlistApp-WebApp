@@ -1,5 +1,7 @@
 from __future__ import annotations
 from io import BytesIO, StringIO
+import base64
+import json
 import re
 import pandas as pd
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -33,6 +35,12 @@ class GenerateRequest(BaseModel):
 
 class ExportRequest(BaseModel):
     songs: list[Song]
+
+class ShareRequest(BaseModel):
+    name: str = ""
+    notes: str = ""
+    songs: list[Song]
+    transition_time: float | None = Field(default=None, ge=0)
 
 @app.get("/api/health")
 def health(): return {"status": "ok"}
@@ -102,6 +110,46 @@ def export_json(req: ExportRequest):
     frame = normalize_songs(pd.DataFrame([s.model_dump() for s in req.songs]))
     data = frame.to_json(orient="records", date_format="iso").encode("utf-8")
     return StreamingResponse(BytesIO(data), media_type="application/json; charset=utf-8", headers={"Content-Disposition": 'attachment; filename="setlist.json"'})
+
+def _encode_setlist(name: str, notes: str, songs: list[Song], transition_time: float | None) -> str:
+    frame = normalize_songs(pd.DataFrame([s.model_dump() for s in songs]))
+    payload = {
+        "name": name,
+        "notes": notes,
+        "songs": frame.to_dict(orient="records"),
+        "text": write_setlist_to_string(frame),
+        "transition_time": transition_time,
+    }
+    data = json.dumps(payload, default=float).encode("utf-8")
+    return base64.urlsafe_b64encode(data).decode("utf-8").rstrip("=")
+
+def _decode_setlist(code: str) -> dict:
+    try:
+        normalized = str(code).strip()
+        padded = normalized + "=" * (-len(normalized) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded.encode("utf-8")).decode("utf-8"))
+        songs = [Song(**song) for song in payload["songs"]]
+        if not songs: raise ValueError("shared setlist has no songs")
+        frame = normalize_songs(pd.DataFrame([s.model_dump() for s in songs]))
+        return {
+            "name": str(payload.get("name") or ""),
+            "notes": str(payload.get("notes") or ""),
+            "songs": [s.model_dump() for s in songs],
+            "text": write_setlist_to_string(frame),
+            "transition_time": payload.get("transition_time"),
+        }
+    except Exception as exc:
+        raise HTTPException(400, f"Could not decode setlist share code: {exc}") from exc
+
+@app.post("/api/export/share")
+def export_share(req: ShareRequest):
+    if not req.songs: raise HTTPException(400, "There are no songs to share.")
+    return {"code": _encode_setlist(req.name, req.notes, req.songs, req.transition_time)}
+
+@app.get("/api/export/share")
+def decode_share(code: str = ""):
+    if not code: raise HTTPException(400, "Enter a setlist share code.")
+    return _decode_setlist(code)
 
 @app.get("/api/export/template")
 def export_template():
