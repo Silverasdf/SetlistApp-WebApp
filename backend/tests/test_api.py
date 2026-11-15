@@ -56,6 +56,17 @@ def test_generate_requires_songs():
     assert "at least one song" in response.json()["detail"]
 
 
+def test_generate_returns_set_duration_estimate():
+    response = client.post("/api/generate", json={"songs": [{"Song": "A", "Artist": "OG", "Key": "A", "Tuning": "E Standard", "Time": 3, "Mood": 9, "Active": True}], "set_time": 10})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["song_count"] == 1
+    assert body["song_time_minutes"] == 3.0
+    assert body["target_time_minutes"] == 9.0
+    assert body["transition_time_minutes"] == 1.0
+    assert body["total_time_minutes"] == 4.0
+
+
 def test_export_txt_requires_songs():
     response = client.post("/api/export/txt", json={"songs": []})
     assert response.status_code == 400

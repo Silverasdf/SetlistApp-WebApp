@@ -15,6 +15,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Export the catalog or generated setlist as CSV; export the setlist as TXT; export the catalog as JSON.
 - Download a starter CSV template for a new catalog.
 - View catalog stats (song count and total duration).
+- Estimate the total set duration (generated music plus transition time) for a setlist.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
@@ -120,7 +121,7 @@ References:
 - `GET /api/export/template` — download a CSV template with the default song columns
 - `POST /api/import/csv` — multipart CSV import
 - `POST /api/import/spotify` — reports current no-login API limitation; with a token, returns playlist metadata (`playlist_name`, `track_count`) and converted songs
-- `POST /api/generate` — generate a setlist from song records and settings
+- `POST /api/generate` — generate a setlist from song records and settings; response includes `song_time_minutes`, `target_time_minutes`, `transition_time_minutes`, and `total_time_minutes` (music plus transition)
 - `POST /api/export/txt` — download song records as a setlist text file
 - `POST /api/export/csv` — download song records as CSV
 - `POST /api/export/json` — download song records as JSON

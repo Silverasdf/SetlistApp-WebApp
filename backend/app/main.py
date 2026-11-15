@@ -79,7 +79,8 @@ def generate(req: GenerateRequest):
         ordered = sort_sample_into_clusters(sampled, req.cluster_size, req.seed)
     except Exception as exc:
         raise HTTPException(400, f"Could not generate setlist: {exc}") from exc
-    return {"songs": ordered.to_dict(orient="records"), "text": write_setlist_to_string(ordered), "song_count": len(ordered), "song_time_minutes": round(float(ordered["Time"].sum()), 2), "target_time_minutes": round(target, 2)}
+    song_time = round(float(ordered["Time"].sum()), 2)
+    return {"songs": ordered.to_dict(orient="records"), "text": write_setlist_to_string(ordered), "song_count": len(ordered), "song_time_minutes": song_time, "target_time_minutes": round(target, 2), "transition_time_minutes": round(transition, 2), "total_time_minutes": round(song_time + transition, 2)}
 
 @app.post("/api/export/csv")
 def export_csv(req: ExportRequest):
