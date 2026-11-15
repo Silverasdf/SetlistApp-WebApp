@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 
 type Song = { Song: string; Artist: string; Key: string; Tuning: string; Time: number; Mood: number; Active: boolean };
 type Generated = { songs: Song[]; text: string; song_count: number; song_time_minutes: number; target_time_minutes: number; transition_time_minutes?: number; total_time_minutes?: number };
@@ -19,6 +19,9 @@ export default function Home() {
  const [includes,setIncludes] = useState<string[]>([]); const [generated,setGenerated] = useState<Generated|null>(null); const [busy,setBusy] = useState(false); const [status,setStatus] = useState(""); const [isError,setIsError] = useState(false); const [seed,setSeed] = useState(""); const [savedSetlist,setSavedSetlist] = useState<SavedSetlist|null>(loadSavedSetlist); const [setlistNotes,setSetlistNotes] = useState(""); const [lastSeed,setLastSeed] = useState<number|null>(loadLastSeed);
  useEffect(()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(songs))}catch{}},[songs]);
  useEffect(()=>{try{localStorage.setItem(SAVED_KEY,JSON.stringify(savedSetlist))}catch{}},[savedSetlist]);
+ const generateRef = useRef(generate);
+ useEffect(()=>{generateRef.current = generate});
+ useEffect(()=>{function onKeyDown(e:KeyboardEvent){const target=e.target as HTMLElement|null;const isTyping=!!target&&(target.tagName==="INPUT"||target.tagName==="TEXTAREA"||target.isContentEditable);if(!isTyping&&(e.metaKey||e.ctrlKey)&&e.key==="Enter"&&songs.length&&!busy){e.preventDefault();generateRef.current()}}window.addEventListener("keydown",onKeyDown);return()=>{window.removeEventListener("keydown",onKeyDown)}},[busy,songs]);
  const activeCount = useMemo(()=>songs.filter(s=>s.Active).length,[songs]); const catalogTime = useMemo(()=>songs.reduce((sum,s)=>sum+s.Time,0),[songs]);
  async function request(path:string, init:RequestInit={}) { const res=await fetch(`${API}${path}`,init); if(!res.ok){let msg=`Request failed (${res.status})`; try{const body=await res.json();const detail=body?.detail;msg=Array.isArray(detail)?`Request failed (${res.status}): ${detail.map((d)=>d?.msg||d?.type).join(", ")}`:detail||msg}catch{} throw new Error(msg)} return res; }
  function updateSong(index:number, field:keyof Song, value:string|boolean){setSongs(old=>old.map((s,i)=>i===index?{...s,[field]:field==="Active"?value:field==="Time"||field==="Mood"?Number(value):value}:s));setGenerated(null)}
