@@ -46,7 +46,7 @@ class ShareRequest(BaseModel):
 def health(): return {"status": "ok"}
 
 @app.post("/api/import/csv")
-async def import_csv(file: UploadFile = File(...)):
+async def import_csv(file: UploadFile = File(...), generate: bool = False):
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(400, "Upload a .csv file.")
     content = await file.read()
@@ -55,7 +55,10 @@ async def import_csv(file: UploadFile = File(...)):
         frame = normalize_songs(pd.read_csv(BytesIO(content)))
     except Exception as exc:
         raise HTTPException(400, f"Could not read CSV: {exc}") from exc
-    return {"songs": frame.to_dict(orient="records"), "count": len(frame)}
+    response = {"songs": frame.to_dict(orient="records"), "count": len(frame)}
+    if generate and len(frame):
+        response["setlist"] = _generate_setlist_response(GenerateRequest(songs=[Song(**song) for song in frame.to_dict(orient="records")]))
+    return response
 
 @app.post("/api/import/spotify")
 def import_spotify(payload: dict):

@@ -50,6 +50,17 @@ def test_import_csv_rejects_non_csv():
     assert response.status_code == 400
 
 
+def test_import_csv_generates_setlist_when_requested():
+    response = client.post("/api/import/csv?generate=true", files={"file": ("songs.csv", b"Song,Artist,Key,Tuning,Time,Mood,Active\n\"New Song\",OG,A,E Standard,3,9,True\n", "text/csv")})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] == 1
+    assert "setlist" in body
+    assert body["setlist"]["song_count"] == 1
+    assert body["setlist"]["total_time_minutes"] > 0
+    assert "New Song" in body["setlist"]["text"]
+
+
 def test_generate_requires_songs():
     response = client.post("/api/generate", json={"songs": []})
     assert response.status_code == 400
