@@ -121,6 +121,27 @@ def test_spotify_import_with_token_uses_provider(monkeypatch):
     assert body["track_count"] == 1
 
 
+def test_spotify_import_with_token_generates_setlist_when_requested(monkeypatch):
+    def fake_fetch_songs(url, token):
+        assert token == "test-token"
+        return [{"Song": "Imported Song", "Artist": "OG", "Key": "Misc", "Tuning": "E Standard", "Time": 3.0, "Mood": 5.0, "Active": True}]
+
+    def fake_fetch_info(url, token):
+        assert token == "test-token"
+        return {"name": "Band Favorites", "track_count": 1}
+
+    monkeypatch.setattr("app.main.fetch_playlist_songs", fake_fetch_songs)
+    monkeypatch.setattr("app.main.fetch_playlist_info", fake_fetch_info)
+    response = client.post("/api/import/spotify", json={"url": "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M", "token": "test-token", "generate": True})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["count"] == 1
+    assert "setlist" in body
+    assert body["setlist"]["song_count"] == 1
+    assert body["setlist"]["total_time_minutes"] > 0
+    assert "Imported Song" in body["setlist"]["text"]
+
+
 def test_share_requires_songs():
     response = client.post("/api/export/share", json={"name": "Encore", "notes": "", "songs": []})
     assert response.status_code == 400

@@ -73,10 +73,12 @@ def import_spotify(payload: dict):
         songs = fetch_playlist_songs(url, token)
     except Exception as exc:
         raise HTTPException(400, f"Could not import Spotify playlist: {exc}") from exc
-    return {"songs": songs, "count": len(songs), "playlist_name": playlist_info["name"], "track_count": playlist_info["track_count"]}
+    response = {"songs": songs, "count": len(songs), "playlist_name": playlist_info["name"], "track_count": playlist_info["track_count"]}
+    if str(payload.get("generate") or "").strip().lower() in {"1", "true", "yes"}:
+        response["setlist"] = _generate_setlist_response(GenerateRequest(songs=[Song(**song) for song in songs]))
+    return response
 
-@app.post("/api/generate")
-def generate(req: GenerateRequest):
+def _generate_setlist_response(req: GenerateRequest) -> dict:
     if not req.songs: raise HTTPException(400, "Import or add at least one song first.")
     songs = normalize_songs(pd.DataFrame([s.model_dump() for s in req.songs]))
     transition = req.transition_time if req.transition_time is not None else req.set_time * 0.1
@@ -89,6 +91,10 @@ def generate(req: GenerateRequest):
         raise HTTPException(400, f"Could not generate setlist: {exc}") from exc
     song_time = round(float(ordered["Time"].sum()), 2)
     return {"songs": ordered.to_dict(orient="records"), "text": write_setlist_to_string(ordered), "song_count": len(ordered), "song_time_minutes": song_time, "target_time_minutes": round(target, 2), "transition_time_minutes": round(transition, 2), "total_time_minutes": round(song_time + transition, 2)}
+
+@app.post("/api/generate")
+def generate(req: GenerateRequest):
+    return _generate_setlist_response(req)
 
 @app.post("/api/export/csv")
 def export_csv(req: ExportRequest):
