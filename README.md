@@ -22,6 +22,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Start a performance timer during a set with elapsed time and set-remaining tracking.
 - Edit saved setlists, including notes.
 - Persist the set end time and performance timer across page reloads.
+- Sort the song catalog by mood in addition to song, artist, and duration.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
