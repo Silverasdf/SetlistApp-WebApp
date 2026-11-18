@@ -26,6 +26,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Name generated setlist TXT downloads after the setlist title.
 - Export favorites as TXT.
 - Export history entries as TXT.
+- Edit favorite setlist notes.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
