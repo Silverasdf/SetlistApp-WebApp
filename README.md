@@ -23,6 +23,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Edit saved setlists, including notes.
 - Persist the set end time and performance timer across page reloads.
 - Sort the song catalog by mood in addition to song, artist, and duration.
+- Name generated setlist TXT downloads after the setlist title.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
