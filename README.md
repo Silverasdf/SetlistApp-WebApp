@@ -24,6 +24,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Persist the set end time and performance timer across page reloads.
 - Sort the song catalog by mood in addition to song, artist, and duration.
 - Name generated setlist TXT downloads after the setlist title.
+- Export favorites as TXT.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
