@@ -19,6 +19,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Download a starter CSV template for a new catalog.
 - View catalog stats (song count and total duration).
 - Estimate the total set duration (generated music plus transition time) for a setlist.
+- Start a performance timer during a set with elapsed time and set-remaining tracking.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
