@@ -25,6 +25,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Sort the song catalog by mood in addition to song, artist, and duration.
 - Name generated setlist TXT downloads after the setlist title.
 - Export favorites as TXT.
+- Export history entries as TXT.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
