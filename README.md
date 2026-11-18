@@ -21,6 +21,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Estimate the total set duration (generated music plus transition time) for a setlist.
 - Start a performance timer during a set with elapsed time and set-remaining tracking.
 - Edit saved setlists, including notes.
+- Persist the set end time and performance timer across page reloads.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
