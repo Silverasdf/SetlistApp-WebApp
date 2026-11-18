@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from app.main import app
 
 client = TestClient(app)
+client_no_raise = TestClient(app, raise_server_exceptions=False)
 
 
 def test_health():
@@ -82,6 +83,16 @@ def test_export_txt_requires_songs():
     response = client.post("/api/export/txt", json={"songs": []})
     assert response.status_code == 400
     assert "no songs" in response.json()["detail"]
+
+
+def test_export_csv_internal_error_returns_json_500(monkeypatch):
+    def boom(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr("app.main.normalize_songs", boom)
+    response = client_no_raise.post("/api/export/csv", json={"songs": [{"Song": "A", "Artist": "OG", "Key": "A", "Tuning": "E Standard", "Time": 3, "Mood": 9, "Active": True}]})
+    assert response.status_code == 500
+    assert response.json()["detail"] == "Internal server error."
 
 
 def test_export_json_requires_songs():

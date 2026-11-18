@@ -4,9 +4,9 @@ import base64
 import json
 import re
 import pandas as pd
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel, Field
 from .engine import normalize_songs, make_setlist, sort_sample_into_clusters, write_setlist_to_string, write_template_to_string
 from .spotify import fetch_playlist_info, fetch_playlist_songs
@@ -44,6 +44,10 @@ class ShareRequest(BaseModel):
 
 @app.get("/api/health")
 def health(): return {"status": "ok"}
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(status_code=500, content={"detail": "Internal server error."})
 
 @app.post("/api/import/csv")
 async def import_csv(file: UploadFile = File(...), generate: bool = False):
