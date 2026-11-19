@@ -27,6 +27,7 @@ This project was developed with AI coding assistance, with the goal of producing
 - Export favorites as TXT.
 - Export history entries as TXT.
 - Edit favorite setlist notes.
+- Add an About page describing the app and how it works.
 - Run locally with Docker Compose.
 
 ### Song CSV schema
