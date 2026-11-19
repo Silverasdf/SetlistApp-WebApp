@@ -4,7 +4,7 @@ A local-first web app for building band setlists from a song catalog. The UI is 
 
 ## Development note
 
-This project was developed with AI coding assistance, with the goal of producing a clean, well-tested, production-shaped application that demonstrates backend, frontend, API, testing, and DevOps practices suitable for technical interviews.
+This project was built with AI coding assistance and an iterative feature loop, with unit tests, CI, and design passes along the way.
 
 ## Features
 
